@@ -4,6 +4,7 @@
 #include "Core/VigaPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Core/Interfaces/JumpInterface.h"
 
 AVigaPlayerController::AVigaPlayerController()
 {
@@ -13,25 +14,25 @@ AVigaPlayerController::AVigaPlayerController()
 void AVigaPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	check(ShoebillContext);
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-
-	//check(Subsystem); Prima c'era il check, ma nel caso del multyplayer potrebbe essere chiamato sugli altri character
-	//facendo crashare il gioco per cui per evitare che succeda invece del check è sufficiente usare un if
-	if (Subsystem) {
-		Subsystem->AddMappingContext(ShoebillContext, 0);
-	}
 }
 
 void AVigaPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
+	check(ShoebillContext);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+
+	if (Subsystem) {
+		Subsystem->AddMappingContext(ShoebillContext, 0);
+	}
+
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Look);
+	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Jump);
 }
 
 void AVigaPlayerController::Move(const FInputActionValue& Value)
@@ -43,7 +44,6 @@ void AVigaPlayerController::Move(const FInputActionValue& Value)
 	// find out which way is forward
 	const FRotator Rotation = GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
-
 	// get forward vector
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
@@ -72,4 +72,17 @@ void AVigaPlayerController::Look(const FInputActionValue& InputActionValue)
 	AddYawInput(LookAxisVector.X);
 	AddPitchInput(LookAxisVector.Y);
 	
+}
+
+void AVigaPlayerController::Jump(const FInputActionValue& InputActionValue)
+{
+	APawn* ControlledPawn = GetPawn<APawn>();
+	if (ControlledPawn && ControlledPawn->GetClass()->ImplementsInterface(UJumpInterface::StaticClass())) 
+	{
+		IJumpInterface* JumpOwner = Cast<IJumpInterface>(ControlledPawn);
+		if (JumpOwner)
+		{
+			JumpOwner->WantsToJump();
+		}
+	}
 }

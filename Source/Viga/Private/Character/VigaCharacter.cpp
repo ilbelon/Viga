@@ -33,4 +33,15 @@ void AVigaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
+void AVigaCharacter::WantsToJump()
+{
+	bWantsToJump = 1;
+}
+
+void AVigaCharacter::HandleJumpNotify()
+{
+	Jump();
+	bWantsToJump = 0;
+}
+
 
