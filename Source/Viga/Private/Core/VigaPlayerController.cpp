@@ -31,6 +31,7 @@ void AVigaPlayerController::SetupInputComponent()
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Move);
+	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Look);
 }
 
 void AVigaPlayerController::Move(const FInputActionValue& Value)
@@ -48,9 +49,27 @@ void AVigaPlayerController::Move(const FInputActionValue& Value)
 
 	// get right vector 
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	const FVector MoveDirection = (ForwardDirection * MovementVector.Y)+(RightDirection * MovementVector.X);
 	if (APawn* ControlledPawn = GetPawn<APawn>()) {
-		ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.Y);
-		ControlledPawn->AddMovementInput(RightDirection, MovementVector.X);
+		//ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.Y);
+		//ControlledPawn->AddMovementInput(RightDirection, MovementVector.X);
+		ControlledPawn->AddMovementInput(MoveDirection, 1.f);
+		
+		FRotator NewRotation = MoveDirection.Rotation();
+		FRotator CurrentRotation = ControlledPawn->GetActorRotation();
+		FRotator SmoothRotation = FMath::RInterpTo(CurrentRotation, NewRotation, GetWorld()->GetDeltaSeconds(), RotationInterpolationSpeed);
+		ControlledPawn->SetActorRotation(SmoothRotation);
 	}
 		
+}
+
+void AVigaPlayerController::Look(const FInputActionValue& InputActionValue)
+{
+	// input is a Vector2D
+	FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
+
+	AddYawInput(LookAxisVector.X);
+	AddPitchInput(LookAxisVector.Y);
+	
 }

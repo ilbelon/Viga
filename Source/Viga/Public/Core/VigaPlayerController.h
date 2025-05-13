@@ -21,6 +21,9 @@ class VIGA_API AVigaPlayerController : public APlayerController
 public:
 	AVigaPlayerController();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|Variables")
+	float RotationInterpolationSpeed = 8.f;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -35,4 +38,6 @@ private:
 	TObjectPtr<UInputAction> LookAction;
 	
 	void Move(const FInputActionValue& InputActionValue);
+
+	void Look(const FInputActionValue& InputActionValue);
 };
