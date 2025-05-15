@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Core/Interfaces/JumpInterface.h"
+#include "Core/Interfaces/AttackInterface.h"
 
 AVigaPlayerController::AVigaPlayerController()
 {
@@ -33,6 +34,7 @@ void AVigaPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Look);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AVigaPlayerController::Jump);
+	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AVigaPlayerController::Attack);
 }
 
 void AVigaPlayerController::Move(const FInputActionValue& Value)
@@ -55,7 +57,7 @@ void AVigaPlayerController::Move(const FInputActionValue& Value)
 		//ControlledPawn->AddMovementInput(ForwardDirection, MovementVector.Y);
 		//ControlledPawn->AddMovementInput(RightDirection, MovementVector.X);
 		ControlledPawn->AddMovementInput(MoveDirection, 1.f);
-		
+
 		FRotator NewRotation = MoveDirection.Rotation();
 		FRotator CurrentRotation = ControlledPawn->GetActorRotation();
 		FRotator SmoothRotation = FMath::RInterpTo(CurrentRotation, NewRotation, GetWorld()->GetDeltaSeconds(), RotationInterpolationSpeed);
@@ -83,6 +85,20 @@ void AVigaPlayerController::Jump(const FInputActionValue& InputActionValue)
 		if (JumpOwner)
 		{
 			JumpOwner->WantsToJump();
+		}
+	}
+}
+
+void AVigaPlayerController::Attack(const FInputActionValue& InputActionValue)
+{
+	
+	APawn* ControlledPawn = GetPawn<APawn>();
+	if (ControlledPawn && ControlledPawn->GetClass()->ImplementsInterface(UAttackInterface::StaticClass()))
+	{
+		IAttackInterface* AttackOwner = Cast<IAttackInterface>(ControlledPawn);
+		if (AttackOwner)
+		{
+			AttackOwner->Attack();
 		}
 	}
 }
