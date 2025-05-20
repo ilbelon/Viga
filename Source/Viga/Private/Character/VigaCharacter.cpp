@@ -18,7 +18,7 @@ AVigaCharacter::AVigaCharacter()
 	AttackCollisionCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	AttackCollisionCapsule->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	AttackCollisionCapsule->SetCapsuleHalfHeight(7580.f);
-	AttackCollisionCapsule->SetCapsuleRadius(2439.f);//7000,0
+	AttackCollisionCapsule->SetCapsuleRadius(2439.f);
 	AttackCollisionCapsule->SetRelativeLocation(FVector(0.f, 0.f, 7000.f));
 
 }
@@ -28,6 +28,7 @@ void AVigaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	JumpMaxCount = 2;
+	AttackCollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AVigaCharacter::OnComponentBeginOverlap);
 }
 
 // Called every frame
@@ -71,6 +72,30 @@ void AVigaCharacter::Attack()
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
+}
+
+void AVigaCharacter::AttackCollisionCanStartOverlap()
+{
+	AttackCollisionCapsule->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AVigaCharacter::AttackCollisionEndOverlap()
+{
+	AttackCollisionCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AlreadyHitActors.Empty();
+}
+
+void AVigaCharacter::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!OtherActor || OtherActor == this || AlreadyHitActors.Contains(OtherActor)) {
+		return;
+	}
+	AlreadyHitActors.Add(OtherActor);
+	UE_LOG(LogTemp, Warning, TEXT("Overlapped %s"), *OtherActor->GetName());
+}
+
+void AVigaCharacter::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
 }
 
 

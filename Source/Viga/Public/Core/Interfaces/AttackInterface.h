@@ -25,4 +25,8 @@ class VIGA_API IAttackInterface
 public:
 	
 	virtual void Attack() = 0;
+
+	virtual void AttackCollisionCanStartOverlap() = 0;
+
+	virtual void AttackCollisionEndOverlap() = 0;
 };

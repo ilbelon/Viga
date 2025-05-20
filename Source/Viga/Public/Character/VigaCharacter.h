@@ -28,18 +28,29 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = "Character|Input")
-	bool bWantsToJump=0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	TObjectPtr<UAnimMontage> AttackMontage;
-	
-	
-
+	//--PARTE GESTIONE SALTO--//
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character|Input")
+	bool bWantsToJump = 0;
+	//jumpInterface
 	virtual void WantsToJump() override;
 	virtual void HandleJumpNotify() override;
+	//--FINE PARTE GESTIONE SALTO--//
+	
+	//--PARTE GESTIONE ATTACCO--//
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> AttackMontage;
+	//AttackInterface
 	virtual void Attack() override;
-
+	virtual void AttackCollisionCanStartOverlap() override;
+	virtual void AttackCollisionEndOverlap() override;
+	//Delegate
+	UFUNCTION()
+	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	//set nemici
+	TSet<TObjectPtr<AActor>> AlreadyHitActors;
+	//--FINE PARTE GESTIONE ATTACCO--//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UCapsuleComponent> AttackCollisionCapsule;
 	
