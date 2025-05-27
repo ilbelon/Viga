@@ -13,5 +13,6 @@ UCLASS()
 class VIGA_API AVigaAIController : public AAIController
 {
 	GENERATED_BODY()
-	
+protected:
+	void OnPossess(APawn* InPawn) override;
 };

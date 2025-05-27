@@ -7,6 +7,7 @@
 #include "VigaEnemyBase.generated.h"
 
 class USphereComponent;
+class USplineComponent;
 
 UCLASS()
 class VIGA_API AVigaEnemyBase : public ACharacter
@@ -30,5 +31,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
 	TObjectPtr<USphereComponent> EnemyCollision;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	USplineComponent* MovementSpline;
 	
 };
