@@ -1,6 +1,3 @@
-
-
-
 #include "Character/Enemy/VigaEnemyPlaceable.h"
 #include "Components/SplineComponent.h"
 #include "Components/SceneComponent.h"
@@ -33,9 +30,7 @@ void AVigaEnemyPlaceable::BeginPlay()
 	AVigaEnemyBase* Enemy = Cast<AVigaEnemyBase>(EnemyActor->GetChildActor());
 	if (Enemy)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("--Enemy Valid--"));
 		Enemy->MovementSpline = MovementSpline;
-
 	}
 }
 
