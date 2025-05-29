@@ -3,6 +3,7 @@
 
 #include "Character/Enemy/VigaEnemyBase.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
 
 // Sets default values
@@ -13,6 +14,20 @@ AVigaEnemyBase::AVigaEnemyBase()
 
 	EnemyCollision = CreateDefaultSubobject<USphereComponent>(TEXT("EnemyCollision"));
 	EnemyCollision->SetupAttachment(RootComponent);
+
+	EnemyWakeUpCollision = CreateDefaultSubobject<USphereComponent>(TEXT("EnemyWakeUpCollision"));
+	EnemyWakeUpCollision->SetSphereRadius(540.f);
+	EnemyWakeUpCollision->SetupAttachment(RootComponent);
+
+	EnemyAggroCollision = CreateDefaultSubobject<USphereComponent>(TEXT("EnemyAggroCollision"));
+	EnemyAggroCollision->SetSphereRadius(318.f);
+	EnemyAggroCollision->SetupAttachment(RootComponent);
+
+	EnemyAttackHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackHitboxCollision"));
+	EnemyAttackHitbox->SetupAttachment(RootComponent);
+
+	/*TextRender = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TextRender"));
+	TextRender->SetupAttachment(RootComponent);*/
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
