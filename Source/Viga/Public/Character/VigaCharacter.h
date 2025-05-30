@@ -50,8 +50,10 @@ public:
 	void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	//set nemici
 	TSet<TObjectPtr<AActor>> AlreadyHitActors;
-	//--FINE PARTE GESTIONE ATTACCO--//
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UCapsuleComponent> AttackCollisionCapsule;
+	//--FINE PARTE GESTIONE ATTACCO--//
+	
 	
 };

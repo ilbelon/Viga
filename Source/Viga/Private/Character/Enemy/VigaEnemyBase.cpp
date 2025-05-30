@@ -24,6 +24,7 @@ AVigaEnemyBase::AVigaEnemyBase()
 	EnemyAggroCollision->SetupAttachment(RootComponent);
 
 	EnemyAttackHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackHitboxCollision"));
+	EnemyAttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	EnemyAttackHitbox->SetupAttachment(RootComponent);
 
 	/*TextRender = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TextRender"));
@@ -37,7 +38,7 @@ AVigaEnemyBase::AVigaEnemyBase()
 void AVigaEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	EnemyAttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &AVigaEnemyBase::OnComponentBeginOverlap);
 }
 
 // Called every frame
@@ -52,6 +53,33 @@ void AVigaEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AVigaEnemyBase::Attack()
+{
+	if (GetMesh() && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(AttackMontage))
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+	}
+}
+
+void AVigaEnemyBase::AttackCollisionCanStartOverlap()
+{
+	EnemyAttackHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AVigaEnemyBase::AttackCollisionEndOverlap()
+{
+	EnemyAttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AVigaEnemyBase::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Colpito %s"), *OtherActor->GetName());
+}
+
+void AVigaEnemyBase::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
 }
 
 

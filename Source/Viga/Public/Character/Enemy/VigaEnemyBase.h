@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Core/Interfaces/AttackInterface.h"
 #include "VigaEnemyBase.generated.h"
 
 class USphereComponent;
@@ -13,7 +14,7 @@ class UTextRenderComponent;
 
 UCLASS()
 
-class VIGA_API AVigaEnemyBase : public ACharacter
+class VIGA_API AVigaEnemyBase : public ACharacter, public IAttackInterface
 {
 	GENERATED_BODY()
 public:
@@ -33,8 +34,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
 	TObjectPtr<USphereComponent> EnemyCollision;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
-	TObjectPtr<USplineComponent> MovementSpline;
+	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Collision")
 	TObjectPtr<USphereComponent> EnemyWakeUpCollision;
@@ -43,18 +43,37 @@ public:
 	TObjectPtr<USphereComponent> EnemyAggroCollision;
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Collision")
-	TObjectPtr<UBoxComponent> EnemyAttackHitbox;
+	
+
+	//--PARTE GESTIONE MOVIMENTO--//
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
+	TObjectPtr<USplineComponent> MovementSpline;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SpeedSpline = 200.f;
+	//--FINE PARTE GESTIONE MOVIMENTO--//
 
-	
+	//--PARTE GESTIONE ATTACCO--//
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Collision")
+	TObjectPtr<UBoxComponent> EnemyAttackHitbox;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> AttackMontage;
+	//AttackInterface
+	virtual void Attack() override;
+	virtual void AttackCollisionCanStartOverlap() override;
+	virtual void AttackCollisionEndOverlap() override;
 
+	UFUNCTION()
+	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	//--FINE PARTE GESTIONE ATTACCO--//
+
+	//PARTI PRESENTI NEL CODICE DI ANDREA CHE DEVO DECIDERE SE E QUANDO INTEGRARE
 	/*UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float DistanceAlongSpline = 0.f;*/
 
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr <UTextRenderComponent> TextRender;*/
-	
 };
