@@ -59,7 +59,17 @@ void AVigaEnemyBase::Attack()
 {
 	if (GetMesh() && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(AttackMontage))
 	{
+		//perché l'animazione parta occorre che l'animation blueprint abbia lo slot impostato 
+		// sullo stesso slot selezionato nell'animation montage
+		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+		//GetMesh()->GetAnimInstance()->OnPlayMontageNotifyEnd.AddDynamic( sdd)
+		/* UPlayMontageCallbackProxy* PlayMontageCallbackProxy = UPlayMontageCallbackProxy::CreateProxyObjectForPlayMontage(
+			Mesh,
+			VaultMontage
+		);
+
+		PlayMontageCallbackProxy->OnCompleted.AddDynamic(this, &UVaultComponent::OnVaultMontageCompleted);*/
 	}
 }
 
