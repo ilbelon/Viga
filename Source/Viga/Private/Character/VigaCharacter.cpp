@@ -3,6 +3,7 @@
 
 #include "Character/VigaCharacter.h"
 #include "Components/CapsuleComponent.h"
+#include "Character/HealthComponent.h"
 
 
 // Sets default values
@@ -21,6 +22,9 @@ AVigaCharacter::AVigaCharacter()
 	AttackCollisionCapsule->SetCapsuleRadius(2439.f);
 	AttackCollisionCapsule->SetRelativeLocation(FVector(0.f, 0.f, 7000.f));
 
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	//AddOwnedComponent(HealthComponent);
+
 }
 
 // Called when the game starts or when spawned
@@ -29,6 +33,14 @@ void AVigaCharacter::BeginPlay()
 	Super::BeginPlay();
 	JumpMaxCount = 2;
 	AttackCollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AVigaCharacter::OnComponentBeginOverlap);
+	HealthComponent->OnHealthChangeTriggered.AddDynamic(this, &AVigaCharacter::OnHealthChange);
+	HealthComponent->OnDeathTriggered.AddDynamic(this, &AVigaCharacter::OnDeath);
+	EndedDelegate.BindUObject(this, &AVigaCharacter::OnMontageEnded);
+	if (DeathMontage) 
+	{
+		GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndedDelegate, DeathMontage);
+	}
+	
 }
 
 // Called every frame
@@ -68,7 +80,8 @@ void AVigaCharacter::HandleJumpNotify()
 
 void AVigaCharacter::Attack()
 {
-	if (GetMesh() && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(AttackMontage))
+	if (!GetMesh()) return;
+	if (!GetMesh()->GetAnimInstance()->Montage_IsPlaying(AttackMontage) && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeathMontage))
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
@@ -88,14 +101,57 @@ void AVigaCharacter::AttackCollisionEndOverlap()
 void AVigaCharacter::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!OtherActor || OtherActor == this || AlreadyHitActors.Contains(OtherActor)) {
+		if (OtherActor->GetClass()->ImplementsInterface(UDamageableInterface::StaticClass())) {
+			IDamageableInterface* Damageable = Cast<IDamageableInterface>(OtherActor);
+			if (Damageable) {
+				UE_LOG(LogTemp, Warning, TEXT("Hitted %s"), *OtherActor->GetName());
+				UE_LOG(LogTemp, Warning, TEXT("OtherComp %s"), *OtherComp->GetName());
+				Damageable->ApplyDamage(BaseDamage, this);
+			}
+		}
 		return;
 	}
 	AlreadyHitActors.Add(OtherActor);
 	UE_LOG(LogTemp, Warning, TEXT("Overlapped %s"), *OtherActor->GetName());
+
+
 }
 
 void AVigaCharacter::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+}
+
+void AVigaCharacter::ApplyDamage(int32 DamageAmount, AActor* DamageInstigator)
+{
+	//il broadcast dell'evento avviene nel modifyhealth
+	HealthComponent->ModifyHealth(-DamageAmount);
+}
+
+void AVigaCharacter::OnHealthChange(int32 NewHealth)
+{
+	if (NewHealth == 0) {
+		UE_LOG(LogTemp, Warning, TEXT("MORTO"));
+		HealthComponent->TriggerOnDeath();
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Vita: %d"), HealthComponent->GetCurrentHealth());
+	}
+}
+
+void AVigaCharacter::OnDeath()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnDeath"));
+	if (DeathMontage!=nullptr) {
+		if (GetMesh() && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeathMontage))
+		{
+			GetMesh()->GetAnimInstance()->Montage_Play(DeathMontage);
+		}
+	}
+}
+
+void AVigaCharacter::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted) 
+{
+	UE_LOG(LogTemp, Warning, TEXT("RESPAWNA SHOEBILL PER IL POTERE DI GREYSKULL"));
 }
 
 

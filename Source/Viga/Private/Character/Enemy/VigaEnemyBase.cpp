@@ -4,6 +4,7 @@
 #include "Character/Enemy/VigaEnemyBase.h"
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
+#include "Character/HealthComponent.h"
 
 
 // Sets default values
@@ -27,6 +28,8 @@ AVigaEnemyBase::AVigaEnemyBase()
 	EnemyAttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	EnemyAttackHitbox->SetupAttachment(RootComponent);
 
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
 	/*TextRender = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TextRender"));
 	TextRender->SetupAttachment(RootComponent);*/
 
@@ -39,6 +42,7 @@ void AVigaEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
 	EnemyAttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &AVigaEnemyBase::OnComponentBeginOverlap);
+	HealthComponent->OnHealthChangeTriggered.AddDynamic(this, &AVigaEnemyBase::OnHealthChange);
 }
 
 // Called every frame
@@ -86,10 +90,30 @@ void AVigaEnemyBase::AttackCollisionEndOverlap()
 void AVigaEnemyBase::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Colpito %s"), *OtherActor->GetName());
+	if (OtherActor->GetClass()->ImplementsInterface(UDamageableInterface::StaticClass())) {
+		IDamageableInterface* Damageable = Cast<IDamageableInterface>(OtherActor);
+		if (Damageable) {
+			UE_LOG(LogTemp, Warning, TEXT("Hitted %s"), *OtherActor->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("OtherComp %s"), *OtherComp->GetName());
+			Damageable->ApplyDamage(BaseDamage, this);
+		}
+	}
 }
 
 void AVigaEnemyBase::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+}
+
+void AVigaEnemyBase::ApplyDamage(int32 DamageAmount, AActor* DamageInstigator)
+{
+	HealthComponent->ModifyHealth(-DamageAmount);
+}
+
+void AVigaEnemyBase::OnHealthChange(int32 NewHealth)
+{
+	if (NewHealth == 0) {
+		UE_LOG(LogTemp, Warning, TEXT("MORTO"));
+	}
 }
 
 

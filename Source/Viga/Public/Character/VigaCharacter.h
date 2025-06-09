@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "Core/Interfaces/JumpInterface.h"
 #include "Core/Interfaces/AttackInterface.h"
+#include "Core/Interfaces/DamageableInterface.h"
 #include "GameFramework/Character.h"
 #include "VigaCharacter.generated.h"
 
+//class UHealthComponent;
 UCLASS()
-class VIGA_API AVigaCharacter : public ACharacter, public IJumpInterface, public IAttackInterface
+class VIGA_API AVigaCharacter : public ACharacter, public IJumpInterface, public IAttackInterface, public IDamageableInterface
 {
 	GENERATED_BODY()
 
@@ -53,7 +55,34 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	TObjectPtr<UCapsuleComponent> AttackCollisionCapsule;
+
+	//Damageable interface
+	virtual void ApplyDamage(int32 DamageAmount, AActor* DamageInstigator) override;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TObjectPtr<UHealthComponent> HealthComponent;
+
+	UFUNCTION()
+	void OnHealthChange(int32 NewHealth);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseDamage = 1;
+
+	
+
+
+	UFUNCTION()
+	void OnDeath();
+
+	//parte per animazione morte e delegate
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> DeathMontage;
+	FOnMontageEnded EndedDelegate;
+
+
 	//--FINE PARTE GESTIONE ATTACCO--//
-	
-	
+
+private:
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

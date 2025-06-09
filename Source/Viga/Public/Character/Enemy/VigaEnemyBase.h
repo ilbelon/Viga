@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Core/Interfaces/AttackInterface.h"
+#include "Core/Interfaces/DamageableInterface.h"
 #include "VigaEnemyBase.generated.h"
 
 class USphereComponent;
@@ -14,7 +15,7 @@ class UTextRenderComponent;
 
 UCLASS()
 
-class VIGA_API AVigaEnemyBase : public ACharacter, public IAttackInterface
+class VIGA_API AVigaEnemyBase : public ACharacter, public IAttackInterface, public IDamageableInterface
 {
 	GENERATED_BODY()
 public:
@@ -68,6 +69,20 @@ public:
 	UFUNCTION()
 	void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	//Damageable interface
+	virtual void ApplyDamage(int32 DamageAmount, AActor* DamageInstigator) override;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TObjectPtr<UHealthComponent> HealthComponent;
+
+	UFUNCTION()
+	void OnHealthChange(int32 NewHealth);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseDamage = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> DeathMontage;
 	//--FINE PARTE GESTIONE ATTACCO--//
 
 	//PARTI PRESENTI NEL CODICE DI ANDREA CHE DEVO DECIDERE SE E QUANDO INTEGRARE
