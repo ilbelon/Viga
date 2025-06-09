@@ -105,6 +105,8 @@ public:
 
 	//funzione utilizzata dal delegate per il montage ended
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	//void DestroySelf();
 	
 	//--FINE PARTE GESTIONE DANNI SUBITI--//
 	

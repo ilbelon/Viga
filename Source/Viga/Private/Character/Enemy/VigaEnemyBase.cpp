@@ -142,7 +142,14 @@ void AVigaEnemyBase::OnDeath()
 
 void AVigaEnemyBase::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	BeginDestroy();
+	
+	//FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AVigaEnemyBase::DestroySelf, 0.1f, false);
+	//this->DestroySelf();
+	Destroy();
 }
 
-
+//void AVigaEnemyBase::DestroySelf()
+//{
+//	Destroy();
+//}
