@@ -43,6 +43,12 @@ void AVigaEnemyBase::BeginPlay()
 	Super::BeginPlay();
 	EnemyAttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &AVigaEnemyBase::OnComponentBeginOverlap);
 	HealthComponent->OnHealthChangeTriggered.AddDynamic(this, &AVigaEnemyBase::OnHealthChange);
+	HealthComponent->OnDeathTriggered.AddDynamic(this, &AVigaEnemyBase::OnDeath);
+
+	//In Blueprint c'è il nodo che gestisce i delegate del montage ended e gli altri
+	//in c++ bisogna dichiararlo così in questo modo si può usare il delegate per il respawn
+	EndedDelegate.BindUObject(this, &AVigaEnemyBase::OnMontageEnded);
+	
 }
 
 // Called every frame
@@ -113,7 +119,30 @@ void AVigaEnemyBase::OnHealthChange(int32 NewHealth)
 {
 	if (NewHealth == 0) {
 		UE_LOG(LogTemp, Warning, TEXT("MORTO"));
+		HealthComponent->TriggerOnDeath();
 	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Vita: %d"), HealthComponent->GetCurrentHealth());
+	}
+}
+
+void AVigaEnemyBase::OnDeath()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnDeath"));
+	if (DeathMontage != nullptr) {
+		if (GetMesh() && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeathMontage))
+		{
+			GetMesh()->GetAnimInstance()->Montage_Play(DeathMontage);
+			//Attenzione: Montage_SetEndDelegate deve essere chiamato dopo Montage_Play, non prima, perché Unreal associa 
+			// il delegate alla singola riproduzione.
+			GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndedDelegate, DeathMontage);
+		}
+	}
+}
+
+void AVigaEnemyBase::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	BeginDestroy();
 }
 
 

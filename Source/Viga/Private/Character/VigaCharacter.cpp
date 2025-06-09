@@ -35,11 +35,18 @@ void AVigaCharacter::BeginPlay()
 	AttackCollisionCapsule->OnComponentBeginOverlap.AddDynamic(this, &AVigaCharacter::OnComponentBeginOverlap);
 	HealthComponent->OnHealthChangeTriggered.AddDynamic(this, &AVigaCharacter::OnHealthChange);
 	HealthComponent->OnDeathTriggered.AddDynamic(this, &AVigaCharacter::OnDeath);
+	
+	//In Blueprint c'è il nodo che gestisce i delegate del montage ended e gli altri
+	//in c++ bisogna dichiararlo così in questo modo si può usare il delegate per il respawn
 	EndedDelegate.BindUObject(this, &AVigaCharacter::OnMontageEnded);
-	if (DeathMontage) 
+	
+	//Questa soluzione sotto andrebbe bene per gestire TUTTI i montage, ma si dovrebbe andare a controllare 
+	//quale montage usare ogni volta. Siccome serve solo per il death non ha senso controllarli tutti
+	//lascio questo come riferimento
+	/*if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
 	{
-		GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndedDelegate, DeathMontage);
-	}
+		AnimInstance->OnMontageEnded.AddDynamic(this, &AVigaCharacter::OnMontageEnded);
+	}*/
 	
 }
 
@@ -123,8 +130,11 @@ void AVigaCharacter::OnComponentEndOverlap(UPrimitiveComponent* OverlappedCompon
 
 void AVigaCharacter::ApplyDamage(int32 DamageAmount, AActor* DamageInstigator)
 {
-	//il broadcast dell'evento avviene nel modifyhealth
+	//il broadcast dell'evento avviene nel modifyhealth, quindi sul component
+	//sarebbe stato uguale se qui avessi messo HealthComponent->TriggerOnHealthChange(HealthComponent->GetCurrentHealth());
+	//ma essendo già nel component non serve
 	HealthComponent->ModifyHealth(-DamageAmount);
+	
 }
 
 void AVigaCharacter::OnHealthChange(int32 NewHealth)
@@ -145,6 +155,9 @@ void AVigaCharacter::OnDeath()
 		if (GetMesh() && !GetMesh()->GetAnimInstance()->Montage_IsPlaying(DeathMontage))
 		{
 			GetMesh()->GetAnimInstance()->Montage_Play(DeathMontage);
+			//Attenzione: Montage_SetEndDelegate deve essere chiamato dopo Montage_Play, non prima, perché Unreal associa 
+			// il delegate alla singola riproduzione.
+			GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(EndedDelegate, DeathMontage);
 		}
 	}
 }

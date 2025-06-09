@@ -12,6 +12,8 @@ class USphereComponent;
 class USplineComponent;
 class UBoxComponent;
 class UTextRenderComponent;
+class UHealthComponent;
+
 
 UCLASS()
 
@@ -64,27 +66,48 @@ public:
 	virtual void AttackCollisionCanStartOverlap() override;
 	virtual void AttackCollisionEndOverlap() override;
 
+	//Danno base inflitto
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	int32 BaseDamage = 1;
+
 	UFUNCTION()
 	void OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	//--FINE PARTE GESTIONE ATTACCO--//
+	
+	//--PARTE GESTIONE DANNI SUBITI--//
+
 	//Damageable interface
 	virtual void ApplyDamage(int32 DamageAmount, AActor* DamageInstigator) override;
 
 
+	//Component per gestire gli eventi OnDamageTaken e OnDeath
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+	//Di seguito le funzioni utilizzate dai due eventi gestiti con l'health component
 
 	UFUNCTION()
 	void OnHealthChange(int32 NewHealth);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
-	int32 BaseDamage = 1;
+	UFUNCTION()
+	void OnDeath();
+
+	
+	// Death Montage per l'animazione
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> DeathMontage;
-	//--FINE PARTE GESTIONE ATTACCO--//
 
+	//Delegate per la fine dell'animazione della morte
+	FOnMontageEnded EndedDelegate;
+
+	//funzione utilizzata dal delegate per il montage ended
+	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	
+	//--FINE PARTE GESTIONE DANNI SUBITI--//
+	
 	//PARTI PRESENTI NEL CODICE DI ANDREA CHE DEVO DECIDERE SE E QUANDO INTEGRARE
 	/*UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float DistanceAlongSpline = 0.f;*/
